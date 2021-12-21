@@ -57,6 +57,7 @@ class Node:
         self.center_of_mass = 0
         self.total_mass = 0
 
+
     def _set_limits(self):
         # Initialize Array
         limits = dict()
@@ -92,6 +93,7 @@ class Node:
                                             self.geometrical_center.z  + (self.arete / 2))
 
         return limits
+
 
     def _set_bodies(self):
         corners = 0
