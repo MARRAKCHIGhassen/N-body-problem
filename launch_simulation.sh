@@ -14,4 +14,4 @@ echo "${RED} Vérification et activation de l'existence de l'environnement ${NC}
 
 # Exécution du script
 echo "${RED} Exécution du script ${NC}"
-/home/marrakchi/anaconda3/envs/NBody-Env/bin/python NBody-problem.py
+/home/marrakchi/anaconda3/envs/NBody-Env/bin/python scripts/NBody-problem.py
