@@ -10,3 +10,7 @@ LOG_DIR_PATH = "./../log"
 # VERIFICATION
 CONFIG = os.path.isfile(CONFIG_PATH)
 
+MAX_BODIES = 0
+NBodies = 0
+GRAVITATION = 1.0
+THETA = 0.5

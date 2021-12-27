@@ -35,6 +35,7 @@ import sys
 
 # Import custom libraries
 import NBody_problem.utils.log as log
+import NBody_problem.utils.config as config
 import NBody_problem.utils.args as args
 
 import NBody_problem.simulation.simulation as sim
@@ -47,8 +48,11 @@ def launch():
 	
 	log.log("STARTED", "NBody-problem.py", "launch")
 	
+	# Bodies
+	NBodies = config.get_bodies()
+
 	# Launch simulation
-	sim.launch_simulation()
+	sim.launch_simulation(NBodies)
 	
 	log.log("ENDED", "NBody-problem.py", "launch")
 

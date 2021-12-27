@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Plotting Module
+"""Area package.
 
-Plotting in 3D area (Space)
+This package contains all mathematical and data representations required for the simulation.
 
 Name
 -------
-plot3D
+space
 
 Author
 -------
@@ -30,6 +30,4 @@ Release
 
 
 
-# Importing Global Libraries
-
-# Import custom libraries
+#
