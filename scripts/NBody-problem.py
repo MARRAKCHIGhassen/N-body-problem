@@ -48,11 +48,11 @@ def launch():
 	
 	log.log("STARTED", "NBody-problem.py", "launch")
 	
-	# Bodies
-	NBodies = config.get_bodies()
+	# Integrate configuration from config.ini
+	config.integrate_configuration()
 
 	# Launch simulation
-	sim.launch_simulation(NBodies)
+	sim.launch_simulation()
 	
 	log.log("ENDED", "NBody-problem.py", "launch")
 

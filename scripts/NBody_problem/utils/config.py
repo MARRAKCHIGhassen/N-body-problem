@@ -35,53 +35,49 @@ Release
 
 
 
-# Importing libraries
+# Importing Global Libraries
 import os
+
+# Import custom libraries
 from configparser import ConfigParser
 import NBody_problem.utils.log as log
 import NBody_problem.utils.settings as settings
+import NBody_problem.area.body as body
+import NBody_problem.geometry.vector as vector
 
 
 
 # Main Functions
 def configure():
-	"""Initialize config.ini file."""
+	"""Get the user confirmation about config.ini before integrate configuration"""
 	
 	#------------------------------------------------ 
 	
 
 	log.log("STARTED", "config.py", "configure")
 	
-	# configurator
-	config = ConfigParser()
+	# print file structure
+	print("---------------- Please verify the config.ini structure")
+	print("---------------- You can use the .config/config_sample")
+	print("---------------- If you make modification into the above file, please make sure to save changes under .config/config.ini")
+	print_config_file_struct()
+	print('\n \n')
+
+	# Reading the file name
+	confirmation = False
+	input_str = ""
+	while ((input_str != 'y') and (input_str != 'n')):
+		input_str = input("Do you confirm config.ini configuration si done ? ([y]/n): ")
+		if input_str == 'y' :
+			confirmation = True
+
+	# Verification
+	if confirmation == False :
+		return 
 	
-	# Add simulation section
-	config.add_section("simulation")
-
-	# Laboratory Informations
-	print("---------------- Problem related informations")
-
-	# Add number of bodies
-	bodies_number = __read_bodies_number()
-	config.set("simulation", "bodies_number", str(bodies_number))
-
-	# Add space width (x)
-	space_width = __read_space_width()
-	config.set("simulation", "space_width", str(space_width))
-
-	# Add space height (y)
-	space_height = __read_space_height()
-	config.set("simulation", "space_height", str(space_height))
-
-	# Add space depth (z)
-	space_depth = __read_space_depth()
-	config.set("simulation", "space_depth", str(space_depth))
-
-	# save in config.ini
-	__save_config(config)
+	integrate_configuration()
 
 	log.log("ENDED", "config.py", "configure")
-
 
 def update_config():
 	"""Update config.ini file."""
@@ -91,443 +87,230 @@ def update_config():
 
 	log.log("STARTED", "config.py", "update_config")
 	
-	# configurator
-	config = __get_current_config()
+	# print file structure
+	print("---------------- You requested updating configuration")
+	print("---------------- You can abort if there are no changes made into config.ini")
+	print_config_file_struct()
+	print('\n \n')
+
+	# Reading the file name
+	confirmation = False
+	input_str = ""
+	while ((input_str != 'y') and (input_str != 'n')):
+		input_str = input("Do you confirm updating config.ini ? ([y]/n): ")
+		if input_str == 'y' :
+			confirmation = True
+
+	# Verification
+	if confirmation == False :
+		return 
 	
-	# Update number of bodies
-	bodies_number = __print_current_bodies_number(config)
-	answer = input("Do you want to change the number of bodies ? (y : yes / other : no) : ")
-	if answer == 'y':
-		bodies_number = __read_bodies_number()
-
-	# Update space width
-	space_width = __print_current_space_width(config)
-	answer = input("Do you want to change the width of the space ? (y : yes / other : no) : ")
-	if answer == 'y':
-		space_width = __read_space_width()
-
-
-	# Update space height
-	space_height = __print_current_space_height(config)
-	answer = input("Do you want to change the height of the space ? (y : yes / other : no) : ")
-	if answer == 'y':
-		space_height = __read_space_height()
-
-
-	# Update space depth
-	space_depth = __print_current_space_depth(config)
-	answer = input("Do you want to change the depth of the space ? (y : yes / other : no) : ")
-	if answer == 'y':
-		space_depth = __read_space_depth()
-
-
-	# Update simulation section
-	config.set("simulation", "bodies_number", str(bodies_number))
-	config.set("simulation", "space_width", str(space_width))
-	config.set("simulation", "space_height", str(space_height))
-	config.set("simulation", "space_depth", str(space_depth))
-
-	# save in config.ini
-	__save_config(config)
-
+	integrate_configuration()
 
 	log.log("ENDED", "config.py", "update_config")
 
-
-
-# Getters
-def get_bodies_number(config=None):
-	"""return 'bodies_number' value from 'simulation' section in the file config.ini.
-	
-	Parameters
-    ----------
-    config : ConfigParser, optional
-        Configurator.
-
-	Returns
-    -------
-    str : str
-        The value of 'bodies_number' from 'simulation' section.
-	"""
+def integrate_configuration():
+	"""Integrate configuration from config.ini file to the main program flow."""
 	
 	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "get_bodies_number")
 	
-	# configurator
-	if config == None :
-		config = __get_current_config()
+
+	log.log("STARTED", "config.py", "integrate_configuration")
 	
-	simulation = dict(config['simulation'])
-
-	log.log("ENDED", "config.py", "get_bodies_number")
-
-	return simulation['bodies_number']
-
-
-def get_space_width(config=None):
-	"""return 'space_width' value from 'simulation' section in the file config.ini.
-	
-	Parameters
-    ----------
-    config : ConfigParser, optional
-        Configurator.
-
-	Returns
-    -------
-    str : str
-        The value of 'space_width' from 'simulation' section.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "get_space_width")
-	
-	# configurator
-	if config == None :
-		config = __get_current_config()
-	
-	simulation = dict(config['simulation'])
-
-	log.log("ENDED", "config.py", "get_space_width")
-
-	return simulation['space_width']
-
-
-def get_space_height(config=None):
-	"""return 'space_height' value from 'simulation' section in the file config.ini.
-	
-	Parameters
-    ----------
-    config : ConfigParser, optional
-        Configurator.
-
-	Returns
-    -------
-    str : str
-        The value of 'space_height' from 'simulation' section.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "get_space_height")
-	
-	# configurator
-	if config == None :
-		config = __get_current_config()
-	
-	simulation = dict(config['simulation'])
-
-	log.log("ENDED", "config.py", "get_space_height")
-
-	return simulation['space_height']
-
-
-def get_space_depth(config=None):
-	"""return 'space_depth' value from 'simulation' section in the file config.ini.
-	
-	Parameters
-    ----------
-    config : ConfigParser, optional
-        Configurator.
-
-	Returns
-    -------
-    str : str
-        The value of 'space_depth' from 'simulation' section.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "get_space_depth")
-	
-	# configurator
-	if config == None :
-		config = __get_current_config()
-	
-	simulation = dict(config['simulation'])
-
-	log.log("ENDED", "config.py", "get_space_depth")
-
-	return simulation['space_depth']
-
-
-
-# Private functions
-def __get_current_config() :
-	"""Return current configuration.
-
-	Returns
-    -------
-    config : ConfigParser
-        Configurator.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__get_current_config")
-	
-	# configurator
+	# get the configuration
 	config = ConfigParser()
 	config.read(settings.CONFIG_PATH)
-
-	log.log("ENDED", "config.py", "__get_current_config")
-
-	return config
-
-
-def __print_current_bodies_number(config) :
-	"""Print current number of bodies
-
-	Parameters
-    ----------
-    config : ConfigParser
-        Configurator.
 	
-	Returns
-    -------
-    bodies_number : str
-        The current number of bodies.
-	"""
+	# Printing paramteters
+	section = dict(config['program_param'])
+	try :
+		# Verify if it is correctly input
+		settings.Interface = int(section['interface'])
+	except :
+		print('Erreur dans la conversion de interface')
+		return
+
+	# Environlent Parameters
+	section = dict(config['env_param'])
 	
-	#------------------------------------------------ 
+	# dimension
+	try :
+		# Verify if it is correctly input
+		settings.Dimension = int(section['dimension'])
+	except :
+		print('Erreur dans la conversion de dimension')
+		return
+
+	# arete
+	try :
+		# Verify if it is correctly input
+		settings.Arete = float(section['arete'])
+	except :
+		print('Erreur dans la conversion de arete')
+		return
+
+	# gravitation
+	try :
+		# Verify if it is correctly input
+		settings.Gravitation = float(section['gravitation'])
+	except :
+		print('Erreur dans la conversion de gravitation')
+		return
+
+	# theta
+	try :
+		# Verify if it is correctly input
+		settings.Theta = float(section['theta'])
+	except :
+		print('Erreur dans la conversion de theta')
+		return
+
+	# softening
+	try :
+		# Verify if it is correctly input
+		settings.Softening = float(section['softening'])
+	except :
+		print('Erreur dans la conversion de softening')
+		return
 
 
-	log.log("STARTED", "config.py", "__print_current_bodies_number")
+	# Simulation Parameters
+	section = dict(config['sim_param'])
+
+	# number_bodies
+	try :
+		# Verify if it is correctly input
+		settings.Number_bodies = int(section['number_bodies'])
+	except :
+		print('Erreur dans la conversion de number_bodies')
+		return
+
+	# end_time
+	try :
+		# Verify if it is correctly input
+		settings.End_time = float(section['end_time'])
+	except :
+		print('Erreur dans la conversion de end_time')
+		return
+
+	# timestep
+	try :
+		# Verify if it is correctly input
+		settings.Timestep = float(section['timestep'])
+	except :
+		print('Erreur dans la conversion de timestep')
+		return
+
 	
-	bodies_number = get_bodies_number(config)
-	print("-------------")
-	print("Number of bodies : ", bodies_number)
-	print("-------------")
-
-	log.log("ENDED", "config.py", "__print_current_bodies_number")
-
-	return bodies_number
-
-
-def __print_current_space_width(config) :
-	"""Print current width of the space
-
-	Parameters
-    ----------
-    config : ConfigParser
-        Configurator.
-	
-	Returns
-    -------
-    space_width : str
-        The current width of the space.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__print_current_space_width")
-	
-	space_width = get_space_width(config)
-	print("-------------")
-	print("space_width : ", space_width)
-	print("-------------")
-
-	log.log("ENDED", "config.py", "__print_current_space_width")
-
-	return space_width
-
-
-def __print_current_space_height(config) :
-	"""Print current height of the space
-
-	Parameters
-    ----------
-    config : ConfigParser
-        Configurator.
-	
-	Returns
-    -------
-    space_height : str
-        The current height of the space.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__print_current_space_height")
-	
-	space_height = get_space_height(config)
-	print("-------------")
-	print("space_height : ", space_height)
-	print("-------------")
-
-	log.log("ENDED", "config.py", "__print_current_space_height")
-
-	return space_height
-
-
-def __print_current_space_depth(config) :
-	"""Print current depth of the space
-
-	Parameters
-    ----------
-    config : ConfigParser
-        Configurator.
-	
-	Returns
-    -------
-    space_depth : str
-        The current depth of the space.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__print_current_space_depth")
-	
-	space_depth = get_space_depth(config)
-	print("-------------")
-	print("space_depth : ", space_depth)
-	print("-------------")
-
-	log.log("ENDED", "config.py", "__print_current_space_depth")
-
-	return space_depth
-
-
-def __read_bodies_number() :
-	"""Read number of bodies given by the user
-
-	Returns
-    -------
-    bodies_number : int
-        The number of bodies in the space.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__read_bodies_number")
-
-	bodies_number = 0
-	while (bodies_number <= 1):
+	# Bodies
+	settings.N_bodies = []
+	index = 0
+	while True :
 		try :
-			bodies_number = int(input("Give the number bodies within the simulation (>= 2) : "))
-			
+			# Verify if the section exists
+			section = dict(config['body_' + str(index)])
 		except :
-			print("Given value must be an integer")
-	
-	log.log("ENDED", "config.py", "__read_bodies_number")
+			return
 
-	return bodies_number
+		# Create new body
+		new_body = body.Body(index)
 
-
-def __read_space_width() :
-	"""Read the width of space given by the user
-
-	Returns
-    -------
-    space_width : float
-        The width of the space.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__read_space_width")
-
-	space_width = 0
-	while (space_width <= 9.0):
+		# Mass
 		try :
-			space_width = float(input("Give the width of the space of the simulation (>= 10.0) : "))
-			
+			# Verify if it is correctly input
+			new_body.mass = float(section['mass'])
 		except :
-			print("Given value must be a float")
-	
-	log.log("ENDED", "config.py", "__read_space_width")
+			print('Erreur dans la conversion de mass')
+			return
 
-	return space_width
-
-
-def __read_space_height() :
-	"""Read the height of space given by the user
-
-	Returns
-    -------
-    space_height : float
-        The height of the space.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__read_space_height")
-
-	space_height = 0
-	while (space_height <= 9.0):
+		# Position
+		new_body.position = vector.Vector()
 		try :
-			space_height = float(input("Give the height of the space of the simulation (>= 10.0) : "))
-			
+			# Verify if it is correctly input
+			new_body.position.x = float(section['position_x'])
 		except :
-			print("Given value must be a float")
-	
-	log.log("ENDED", "config.py", "__read_space_height")
+			print('Erreur dans la conversion de position x')
+			return
 
-	return space_height
-
-
-def __read_space_depth() :
-	"""Read the depth of space given by the user
-
-	Returns
-    -------
-    space_depth : float
-        The depth of the space.
-	"""
-	
-	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__read_space_depth")
-
-	space_depth = 0
-	while (space_depth <= 9.0):
 		try :
-			space_depth = float(input("Give the depth of the space of the simulation (>= 10.0) : "))
-			
+			# Verify if it is correctly input
+			new_body.position.y = float(section['position_y'])
 		except :
-			print("Given value must be a float")
-	
-	log.log("ENDED", "config.py", "__read_space_depth")
+			print('Erreur dans la conversion de position y')
+			return
 
-	return space_depth
+		try :
+			# Verify if it is correctly input
+			new_body.position.z = float(section['position_z'])
+		except :
+			print('Erreur dans la conversion de position z')
+			return
 
+		# Velocity
+		new_body.velocity = vector.Vector()
+		try :
+			# Verify if it is correctly input
+			new_body.velocity.x = float(section['velocity_x'])
+		except :
+			print('Erreur dans la conversion de velocity x')
+			return
 
-def __save_config(config):
-	"""Save the configuration
+		try :
+			# Verify if it is correctly input
+			new_body.velocity.y = float(section['velocity_y'])
+		except :
+			print('Erreur dans la conversion de velocity y')
+			return
 
-	Parameters
-    ----------
-	config : ConfigParser
-		Configurator.
-	"""
+		try :
+			# Verify if it is correctly input
+			new_body.velocity.z = float(section['velocity_z'])
+		except :
+			print('Erreur dans la conversion de velocity z')
+			return
+
+		# Acceleration
+		new_body.acceleration = vector.Vector()
+		try :
+			# Verify if it is correctly input
+			new_body.acceleration.x = float(section['acceleration_x'])
+		except :
+			print('Erreur dans la conversion de acceleration x')
+			return
+
+		try :
+			# Verify if it is correctly input
+			new_body.acceleration.y = float(section['acceleration_y'])
+		except :
+			print('Erreur dans la conversion de acceleration y')
+			return
+
+		try :
+			# Verify if it is correctly input
+			new_body.acceleration.z = float(section['acceleration_z'])
+		except :
+			print('Erreur dans la conversion de acceleration z')
+			return
+
+		# Add the body
+		settings.N_bodies.append(new_body)
+		settings.Positions.append(new_body.position)
+
+		# Next
+		index += 1
+
+def print_config_file_struct():
+	"""Prints the .config/config_sample file content"""
 	
 	#------------------------------------------------ 
-
-
-	log.log("STARTED", "config.py", "__save_config")
-	print(settings.CONFIG)
-	if not settings.CONFIG :
-		os.system("mkdir {}".format(settings.CONFIG_DIR_PATH))
-		os.system("touch {}".format(settings.CONFIG_PATH))
 	
-	settings.CONFIG = True
 
-	with open(settings.CONFIG_PATH, 'w') as configFile:
-		config.write(configFile)
-	
-	log.log("ENDED", "config.py", "__save_config")
 
+	print('##########################')
+	print('##########################')
+	print('FILE STRUCTURE ###########')
+	with open(os.path.join('.config', 'config_sample'), 'r') as f:
+		print(f.read())
+	print('##########################')
+	print('##########################')
 

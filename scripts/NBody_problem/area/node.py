@@ -36,16 +36,12 @@ rosettacode.org
 
 # Importing Global Libraries
 import numpy as np
-from math import sqrt
-
-from numpy.lib.function_base import insert
 
 # Import custom libraries
-import NBody_problem.utils.config as config
 import NBody_problem.utils.settings as settings
 import NBody_problem.geometry.vector as vector
 import NBody_problem.geometry.boundary as bound
-from scripts.NBody_problem.area.body import Body
+import NBody_problem.area.body as body
 
 class NodePlan:
     """A class implementing a Node."""
@@ -69,7 +65,7 @@ class NodePlan:
         self.total_mass = 0.0
         self.center_of_mass = vector.Vector(0, 0, 0)
         self.bodies = []
-        self.body = Body()
+        self.body = body.Body()
 
         # Leaf Indicator
         self.leaf = False
@@ -139,10 +135,11 @@ class NodePlan:
         """
         updates center of mass. p self-explanatory
         """
-        self.com = np.zeros(3)
-        self.com[0] = np.dot(self.particles[:,0], self.masses[:])/self.M
-        self.com[1] = np.dot(self.particles[:,1], self.masses[:])/self.M
-        self.com[2] = np.dot(self.particles[:,2], self.masses[:])/self.M
+        self.center_of_mass = vector.Vector(0, 0, 0)
+        for body in self.bodies :
+            self.center_of_mass.x = body.position.x * body.mass / self.total_mass
+            self.center_of_mass.y = body.position.y * body.mass / self.total_mass
+            self.center_of_mass.z = body.position.z * body.mass / self.total_mass
         
         return 
 
@@ -189,10 +186,10 @@ class NodePlan:
 
         # Recurse the search into this node's children.
         if not self.leaf:
-            self.nw.query_circle(boundary, geometrical_center, radius, found_bodies)
-            self.ne.query_circle(boundary, geometrical_center, radius, found_bodies)
-            self.se.query_circle(boundary, geometrical_center, radius, found_bodies)
-            self.sw.query_circle(boundary, geometrical_center, radius, found_bodies)
+            self.children['NE'].query_circle(boundary, geometrical_center, radius, found_bodies)
+            self.children['NW'].query_circle(boundary, geometrical_center, radius, found_bodies)
+            self.children['SE'].query_circle(boundary, geometrical_center, radius, found_bodies)
+            self.children['SW'].query_circle(boundary, geometrical_center, radius, found_bodies)
         return found_bodies
 
     def query_radius(self, geometrical_center, radius, found_bodies):
@@ -221,7 +218,23 @@ class NodePlan:
     def _is_empty(self) :
         return self.bodies_number == 0
 
-    def compute_acceleration(self, root, softening=0.01):
+
+    def compute_acceleration(self, root):
+        """
+        Description: 
+            Calculate acceleration for a given particle_id in the simulation with some tolerance theta
+        Inputs:
+            theta: opening angle (float)
+            particle_id: index of particle in sim to calculate force for (int)
+            G: gravitational constant (float)
+        Output:
+            grad: force array (1x3)
+        """
+        self.acceleration = self.traverse_compute(root)
+
+        return self.acceleration
+    
+    def traverse_compute(self, root):
         """
         given two nodes n0 and n1, and some tol theta, traverse the tree till it's far enough that you can approximate the
         node as a "particle" and add the gravitational acceleration of that particle to the ret array. n1 is the leaf node that 
@@ -233,22 +246,11 @@ class NodePlan:
         r = np.sqrt(np.sum(dr**2))
         size_of_node = root.boundary.h - self.boundary.h
         if(size_of_node/r < settings.THETA or root.leaf):
-            self.body.acceleration += settings.GRAVITATION * root.mass * dr / (r**2 + softening**2)**1.5
+            self.body.acceleration += settings.GRAVITATION * root.mass * dr / (r**2 + settings.SOFTENING**2)**1.5
         
         elif self.body.position == root.body.position:
                     (self.body.velocity, root.body.velocity) = (root.body.velocity, self.body.velocity)
         else:
-            for c in root.children:
-                self.compute_acceleration(c, self, softening)
+            for _ in root.children.keys:
+                root.children[_].traverse_compute(root)
         return self.body.acceleration
-
-"""
-        Description: 
-            Calculate acceleration for a given particle_id in the simulation with some tolerance theta
-        Inputs:
-            theta: opening angle (float)
-            particle_id: index of particle in sim to calculate force for (int)
-            G: gravitational constant (float)
-        Output:
-            grad: force array (1x3)
-        """

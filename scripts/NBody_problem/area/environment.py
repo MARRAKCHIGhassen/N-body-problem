@@ -46,16 +46,16 @@ import NBody_problem.geometry.vector as vector
 class Plan:
     def __init__(self):
         # Geometry
-        arete = config.get_space_arete()
+        arete = settings.ARETE
         geometrical_center = vector.Vector2D(0, 0)
         self.root = node.NodePlan(geometrical_center = geometrical_center, arete = arete)
 
         # Bodies
         self.root.insert(settings.NBodies)
 
-    def update(self, softening):
-        for node in range(1) :
-            node.compute_acceleration(softening)
+    def update(self):
+        for node_index in range(settings.NUMBER_BODIES) :
+            settings.NBodies[node_index].compute_acceleration(self.root)
         
         for body in settings.NBodies :
             body.compute()

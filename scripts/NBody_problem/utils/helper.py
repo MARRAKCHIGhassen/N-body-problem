@@ -28,6 +28,13 @@ Release
 
 
 
+# Importing Global Libraries
+
+# Import custom libraries
+import NBody_problem.utils.config as config
+
+
+
 def print_help():
     """Print the help"""
 
@@ -39,3 +46,5 @@ def print_help():
     print("--help    : Print help")
     print("--config  : Launch configuration")
     print("-------------------------------------")
+
+    config.print_config_file_struct()

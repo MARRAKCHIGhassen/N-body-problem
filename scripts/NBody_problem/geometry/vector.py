@@ -40,32 +40,10 @@ import math
 # Import custom libraries
 import NBody_problem.utils.log as log
 
-class Vector2D:
-    """A point located at (x,y) in 2D space.
 
-    Each Point object may be associated with a payload object.
 
-    """
-
-    def __init__(self, x, y, payload=None):
-        self.x, self.y = x, y
-        self.payload = payload
-
-    def __repr__(self):
-        return '{}: {}'.format(str((self.x, self.y)), repr(self.payload))
-    def __str__(self):
-        return 'P({:.2f}, {:.2f})'.format(self.x, self.y)
-
-    def distance_to(self, other):
-        try:
-            other_x, other_y = other.x, other.y
-        except AttributeError:
-            other_x, other_y = other
-        return np.hypot(self.x - other_x, self.y - other_y)
- 
- 
 class Vector:
-    def __init__(self, x, y, z):
+    def __init__(self, x=0, y=0, z=0):
         """Vector Constructor
 
         Parameters
@@ -266,3 +244,28 @@ class Vector:
         return math.sqrt(self.x*self.x + self.y*self.y + self.z*self.z)
     
 
+    def distance(cls, vect_1, vect_2):
+        """calculate distance between two vectors
+
+        Parameters
+        ----------
+        vect_1 : vector
+            the first vector.
+
+        vect_2 : vector
+            the second vector.
+        
+        Returns
+        -------
+        float : float
+            distance between two vectors.
+        """
+
+        #------------------------------------------------
+        
+
+        log.log("STARTED", "vector.py", "distance")
+
+        return math.sqrt((vect_1.x - vect_2.x)**2, (vect_1.y - vect_2.y)**2, (vect_1.z - vect_2.z)**2)
+
+    

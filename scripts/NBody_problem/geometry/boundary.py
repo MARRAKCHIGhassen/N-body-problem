@@ -1,3 +1,43 @@
+# -*- coding: utf-8 -*-
+"""Vector Module
+
+Vectors will be used to represent position of different bodies.
+
+Name
+-------
+vector
+
+Author
+-------
+Ghassen MARRAKCHI
+Fatma MARZOUGUI
+
+Release
+-------
+0.1
+"""
+
+
+
+
+
+
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------------
+
+
+
+# Importing Global Libraries
+import math
+
+# Import custom libraries
+import NBody_problem.utils.log as log
+
+
+
 class Rectangle:
     """A rectangle centred at (cx, cy) with width w and height h."""
 
