@@ -43,7 +43,7 @@ import NBody_problem.geometry.vector as vector
 import NBody_problem.geometry.boundary as bound
 import NBody_problem.area.body as body
 
-class NodePlan:
+class Node:
     """A class implementing a Node."""
 
     def __init__(self, rectangle = bound.Rectangle(0, 0, 0, 0), number_children=0):
@@ -89,13 +89,13 @@ class NodePlan:
         # The boundaries of the four children nodes are "northwest",
         # "northeast", "southeast" and "southwest" quadrants within the
         # boundary of the current node.
-        self.children['NE'] = NodePlan(bound.Rectangle(cx - w/2, cy - h/2, w, h),
+        self.children['NE'] = Node(bound.Rectangle(cx - w/2, cy - h/2, w, h),
                                     self.number_children + 1)
-        self.children['NW'] = NodePlan(bound.Rectangle(cx + w/2, cy - h/2, w, h),
+        self.children['NW'] = Node(bound.Rectangle(cx + w/2, cy - h/2, w, h),
                                     self.number_children + 1)
-        self.children['SE'] = NodePlan(bound.Rectangle(cx + w/2, cy + h/2, w, h),
+        self.children['SE'] = Node(bound.Rectangle(cx + w/2, cy + h/2, w, h),
                                     self.number_children + 1)
-        self.children['SW'] = NodePlan(bound.Rectangle(cx - w/2, cy + h/2, w, h),
+        self.children['SW'] = Node(bound.Rectangle(cx - w/2, cy + h/2, w, h),
                                     self.number_children + 1)
         self.leaf = False
 

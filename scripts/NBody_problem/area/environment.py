@@ -36,7 +36,7 @@ import numpy as np
 
 # Import custom libraries
 import NBody_problem.utils.settings as settings
-import NBody_problem.utils.config as config
+import NBody_problem.utils.log as log
 
 import NBody_problem.area.node as node
 import NBody_problem.area.body as body
@@ -45,20 +45,65 @@ import NBody_problem.geometry.vector as vector
 
 class Plan:
     def __init__(self):
+        """Constructeur de l'environnement de simulation (contenant les points)."""
+	
+        #------------------------------------------------ 
+
+        log.log("STARTED", "environment.py", "__init__")
+        
+        self.construct()
+
+        log.log("ENDED", "environment.py", "__init__")
+
+    def construct(self):
+        """batit l'arbre."""
+	
+        #------------------------------------------------ 
+
+        log.log("STARTED", "environment.py", "construct")
+
         # Geometry
-        arete = settings.ARETE
-        geometrical_center = vector.Vector2D(0, 0)
-        self.root = node.NodePlan(geometrical_center = geometrical_center, arete = arete)
+        arete = settings.Arete
+        geometrical_center = vector.Vector(0, 0, 0)
+        self.root = node.Node(geometrical_center = geometrical_center, arete = arete)
 
         # Bodies
-        self.root.insert(settings.NBodies)
+        self.root.insert(settings.N_bodies)
+
+        log.log("ENDED", "environment.py", "construct")
+
 
     def update(self):
-        for node_index in range(settings.NUMBER_BODIES) :
-            settings.NBodies[node_index].compute_acceleration(self.root)
+        """Met à jour l'envrionnement après écoulement de temps (1 timestep)."""
+	
+        #------------------------------------------------ 
+
+        log.log("STARTED", "environment.py", "update")
+
+        # Calcul des accelérations
+        for node_index in range(settings.Number_bodies) :
+            settings.N_bodies[node_index].compute_acceleration(self.root)
         
-        for body in settings.NBodies :
+        # Calcul des autres paramètres
+        for body in settings.N_bodies :
             body.compute()
+        
+        # Reconstruction de l'arbre
+        self.construct()
+
+        log.log("ENDED", "environment.py", "update")
+
+
+
+
+
+
+
+
+
+
+
+
 
 """
 class Space:

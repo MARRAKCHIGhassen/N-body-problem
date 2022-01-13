@@ -299,12 +299,13 @@ def integrate_configuration():
 		# Next
 		index += 1
 
+	log.log("ENDED", "config.py", "integrate_configuration")
+
 def print_config_file_struct():
 	"""Prints the .config/config_sample file content"""
 	
 	#------------------------------------------------ 
 	
-
 
 	print('##########################')
 	print('##########################')
