@@ -2,7 +2,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from random import uniform
-from numba import jit, cuda
 
 import NBody_problem.settings as settings
 import NBody_problem.bodies as bodies

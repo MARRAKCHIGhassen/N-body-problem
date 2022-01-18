@@ -261,8 +261,7 @@ class Plan:
         # Bodies
         for body_index in range(settings.Number_bodies) :
             self.root.insert(settings.N_bodies[body_index])
-
-    @jit    
+   
     def update(self):
         """Met à jour l'envrionnement après écoulement de temps (1 timestep)."""
 	
