@@ -51,8 +51,14 @@ def launch_simulation():
     simulation_env = env.Plan()
 
     # Initialize Figure
-    figure, axe = prepare_figure()
+    #figure, axe = prepare_figure()
+    plt.figure(figsize=(4,5), dpi=80)
 
+    plt.xlim(-2, 2)
+    plt.ylim(-2, 2)
+    #plt.aspect('equal', 'box')
+    plt.xticks([-2,-1,0,1,2])
+    plt.yticks([-2,-1,0,1,2])
 
     # Initialize number of steps
     nbr_timesteps = int(np.ceil(settings.End_time/settings.Timestep))
@@ -63,9 +69,19 @@ def launch_simulation():
         simulation_env.update()
 
         # Plot
-        update_figure(axe)
+        #update_figure(axe)
+        xx = [pos.x for pos in settings.Positions]
+        print("len xx : ", xx)
+        yy = [pos.y for pos in settings.Positions]
+        print("len yy : ", yy)
+        for _ in settings.N_Body_Nodes.keys():
+            print(_ , ' ||| ', settings.N_Body_Nodes[_])
+        print(str(simulation_env.root))
+        print(str(simulation_env.root))
+        input("test")
+        plt.scatter(xx,yy, s=1, color=[.7,.7,1])
 
-        plt.pause(0.001)
+        plt.pause(0.1)
 
     # Show plot
     plt.show()
@@ -74,7 +90,16 @@ def launch_simulation():
 
 
 def prepare_figure() :
-    """Préparer la figure"""
+    """Préparer la figure
+
+    Returns
+    -------
+    fig : figure
+        La figure de plot.
+    
+    axe : axe
+        L'axe du plot.
+    """
 
     #------------------------------------------------
 

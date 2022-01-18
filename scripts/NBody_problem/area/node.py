@@ -39,6 +39,7 @@ import numpy as np
 
 # Import custom libraries
 import NBody_problem.utils.settings as settings
+import NBody_problem.utils.log as log
 import NBody_problem.geometry.vector as vector
 import NBody_problem.geometry.boundary as bound
 import NBody_problem.area.body as body
@@ -46,15 +47,19 @@ import NBody_problem.area.body as body
 class Node:
     """A class implementing a Node."""
 
-    def __init__(self, rectangle = bound.Rectangle(0, 0, 0, 0), number_children=0):
-        """Initialize this node of the Node.
+    def __init__(self, rectangle = bound.Rectangle(0, 0, 0), number_children=0):
+        """Initialise le noeud à partir de sa géometrie.
 
-        boundary is a Rect object defining the region from which points are
-        placed into this node; max_points is the maximum number of points the
-        node can hold before it must divide (branch into four more nodes);
-        depth keeps track of how deep into the Node this node lies.
-
+        Parameters
+        ----------
+        rectangle : Rectangle
+            La géométrie du noeud. Il définit la région à laquelle les corps appartiennent.
         """
+        
+        #------------------------------------------------ 
+
+        log.log("STARTED", "node.py", "__init__")
+
         # Geometry
         self.boundary = rectangle
         self.children = {'NE' : None, 'SE' : None, 'NW' : None, 'SW' : None}
@@ -63,71 +68,63 @@ class Node:
         # Bodies
         self.bodies_number = 0
         self.total_mass = 0.0
-        self.center_of_mass = vector.Vector(0, 0, 0)
         self.bodies = []
-        self.body = body.Body()
+        self.center_of_mass = vector.Vector(0, 0, 0)
+        self.body = 0
 
         # Leaf Indicator
         self.leaf = False
 
-    def __str__(self):
-        """Return a string representation of this node, suitably formatted."""
-        sp = ' ' * self.number_children * 2
-        s = str(self.boundary) + '\n'
-        s += sp + ', '.join(str(body) for body in self.bodies)
-        if self.leaf:
-            return s
-        return s + '\n' + '\n'.join([
-                sp + 'nw: ' + str(self.nw), sp + 'ne: ' + str(self.ne),
-                sp + 'se: ' + str(self.se), sp + 'sw: ' + str(self.sw)])
-
-    def divide(self):
-        """Divide (branch) this node by spawning four children nodes."""
-
-        cx, cy = self.boundary.cx, self.boundary.cy
-        w, h = self.boundary.w / 2, self.boundary.h / 2
-        # The boundaries of the four children nodes are "northwest",
-        # "northeast", "southeast" and "southwest" quadrants within the
-        # boundary of the current node.
-        self.children['NE'] = Node(bound.Rectangle(cx - w/2, cy - h/2, w, h),
-                                    self.number_children + 1)
-        self.children['NW'] = Node(bound.Rectangle(cx + w/2, cy - h/2, w, h),
-                                    self.number_children + 1)
-        self.children['SE'] = Node(bound.Rectangle(cx + w/2, cy + h/2, w, h),
-                                    self.number_children + 1)
-        self.children['SW'] = Node(bound.Rectangle(cx - w/2, cy + h/2, w, h),
-                                    self.number_children + 1)
-        self.leaf = False
+        log.log("ENDED", "node.py", "__init__")
 
     def insert(self, body):
         """Try to insert Point point into this Node."""
 
-        if not self.boundary.contains(body):
-            # The point does not lie inside boundary: bail.
+        # Si le corps n'appartient pas au noeud.
+        if not self.boundary.contains(body.position): 
             return False
-        if self.bodies_number < settings.MAX_BODIES:
-            # There's room for our point without dividing the Node.
+        
+        # Si le noeud ne contient pas de corps
+        if self.bodies_number < settings.Max_bodies:
+            self.bodies_number += 1
+            self.total_mass += body.mass
+            self.center_of_mass = body.position
+            self.body = body.id
             self.bodies.append(body.id)
+            self.leaf = True
+
+            settings.N_Body_Nodes[body.id] = self
+
             return True
 
-        # No room: divide if necessary, then try the sub-quads.
-        if(not self.leaf): #no particles in this node/cell
+        # Si noeud interne déjà subdivisé
+        if(not self.leaf):
+            # Mettre à jour le centre de masse
+            self.bodies.append(body.id)
+            self.total_mass += body.mass
+            self.bodies_number += 1
+
+            # Mettre à jour le centre de masse
             self.update_com()
 
-            for _ in self.children:
-                if(self.children[_].contains(body)) :
+            for _ in self.children.keys():
+                if(self.children[_].boundary.contains(body.position)) :
                     self.children[_].insert(body)
                     return True
             
-        else:
+        else: # Si noeud contient un corps et il doit être subdivisé
+            # Mettre à jour le centre de masse
+            self.bodies.append(body.id)
+            self.total_mass += body.mass
+            self.bodies_number += 1
+
             self.divide()
             self.update_com()
 
-            for _ in self.children.keys:
-                if(self.children[_].contains(body)) :
+            for _ in self.children.keys():
+                if(self.children[_].boundary.contains(body.position)) :
                     self.children[_].insert(body)
                     return True
-
     
         return False
 
@@ -136,15 +133,100 @@ class Node:
         updates center of mass. p self-explanatory
         """
         self.center_of_mass = vector.Vector(0, 0, 0)
-        for body in self.bodies :
-            self.center_of_mass.x = body.position.x * body.mass / self.total_mass
-            self.center_of_mass.y = body.position.y * body.mass / self.total_mass
-            self.center_of_mass.z = body.position.z * body.mass / self.total_mass
+        for body_index in self.bodies :
+            self.center_of_mass.x = settings.N_bodies[body_index].position.x * settings.N_bodies[body_index].mass / self.total_mass
+            self.center_of_mass.y = settings.N_bodies[body_index].position.y * settings.N_bodies[body_index].mass / self.total_mass
+            self.center_of_mass.z = settings.N_bodies[body_index].position.z * settings.N_bodies[body_index].mass / self.total_mass
         
-        return 
+        return
 
+    def divide(self):
+        """Subdivise le noeud en 4 sous-noeuds."""
+
+        # Informations utiles à la subdivision
+        center_x, center_y = self.boundary.center_x, self.boundary.center_y
+        arete_child = self.boundary.arete / 2
+
+        # Création des fils (géométriquement)
+        self.children['SW'] = Node(bound.Rectangle(center_x - arete_child/2, center_y - arete_child/2, arete_child),
+                                    self.number_children + 1)
+        self.children['SE'] = Node(bound.Rectangle(center_x + arete_child/2, center_y - arete_child/2, arete_child),
+                                    self.number_children + 1)
+        self.children['NE'] = Node(bound.Rectangle(center_x + arete_child/2, center_y + arete_child/2, arete_child),
+                                    self.number_children + 1)
+        self.children['NW'] = Node(bound.Rectangle(center_x - arete_child/2, center_y + arete_child/2, arete_child),
+                                    self.number_children + 1)
+        # Rendre noeud interne
+        self.leaf = False 
+
+    def traverse_compute(self, root):
+        """A partir de la racine, le noeud appelant traverse l'arbre jusqu'à atteindre un noeud suffisement loin pour approximer en un seul corps. L'appel est récursif sur tout les enfants de chaque noeud.
+        
+        Parameters
+        ----------
+        root : Node
+            La racine de l'arbre quadratique.
+
+        Returns
+        -------
+        acceleration : float
+            La nouvelle valeur d'accelération.
+        """
+
+        #------------------------------------------------
+
+        log.log("STARTED", "body.py", "traverse_compute")
+
+        if(self == root): # Ne rien faire s'il s'agit du noeud racine
+            return
+        
+        # Les critères d'évaluation
+        d = vector.Vector.distance(self.center_of_mass, root.center_of_mass)
+        s = root.boundary.arete
+
+        # Vérification
+        if((s/d < settings.Theta) or root.leaf): 
+            settings.N_bodies[self.body].acceleration += settings.Gravitation * root.total_mass * (self.center_of_mass - root.center_of_mass).abs() / (d**2 + settings.Softening**2)**1.5
+        else:
+            for _ in root.children.keys(): # itérer tout les enfant
+                if root.children[_] != None :
+                    self.traverse_compute(root.children[_])
+
+        return settings.N_bodies[self.body].acceleration
+
+    def __str__(self):
+        """Retourne le noeud sous forme de chaine de caractère formattée
+
+        Returns
+        -------
+        string : str
+            La chaine formattée
+        """
+
+        #------------------------------------------------
+
+        space = ' ' * self.number_children * 2
+        string = str(self.boundary) + '\n'
+        string += space + ', '.join(str(settings.N_bodies[body]) for body in self.bodies)
+
+        if self.leaf:
+            return string
+        
+        return string + '\n' + '\n'.join([
+                space + 'nw: ' + str(self.children['NW']), space + 'ne: ' + str(self.children['NE']),
+                space + 'se: ' + str(self.children['SW']), space + 'sw: ' + str(self.children['SW'])])
+
+
+
+
+
+
+
+
+
+"""
     def query(self, boundary, found_bodies):
-        """Find the points in the Node that lie within boundary."""
+        Find the points in the Node that lie within boundary.
 
         if not self.boundary.intersects(boundary):
             # If the domain of this node does not intersect the search
@@ -165,12 +247,12 @@ class Node:
 
 
     def query_circle(self, boundary, geometrical_center, radius, found_bodies):
-        """Find the points in the Node that lie within radius of centre.
+        Find the points in the Node that lie within radius of centre.
 
         boundary is a Rect object (a square) that bounds the search circle.
         There is no need to call this method directly: use query_radius.
 
-        """
+        
 
         if not self.boundary.intersects(boundary):
             # If the domain of this node does not intersect the search
@@ -193,20 +275,14 @@ class Node:
         return found_bodies
 
     def query_radius(self, geometrical_center, radius, found_bodies):
-        """Find the points in the Node that lie within radius of centre."""
+        Find the points in the Node that lie within radius of centre
 
         # First find the square that bounds the search circle as a Rect object.
         boundary = bound.Rectangle(*geometrical_center, 2*radius, 2*radius)
         return self.query_circle(boundary, geometrical_center, radius, found_bodies)
 
-
-    def __len__(self):
-        """Return the number of points in the Node."""
-
-        return self.bodies_number
-
     def draw(self, ax):
-        """Draw a representation of the Node on Matplotlib Axes ax."""
+        Draw a representation of the Node on Matplotlib Axes ax.
 
         self.boundary.draw(ax)
         if not self.leaf:
@@ -215,42 +291,20 @@ class Node:
             self.children['SE'].draw(ax)
             self.children['SW'].draw(ax)
     
-    def _is_empty(self) :
-        return self.bodies_number == 0
 
-
-    def compute_acceleration(self, root):
-        """
-        Description: 
-            Calculate acceleration for a given particle_id in the simulation with some tolerance theta
-        Inputs:
-            theta: opening angle (float)
-            particle_id: index of particle in sim to calculate force for (int)
-            G: gravitational constant (float)
-        Output:
-            grad: force array (1x3)
-        """
-        self.acceleration = self.traverse_compute(root)
-
-        return self.acceleration
-    
-    def traverse_compute(self, root):
-        """
-        given two nodes n0 and n1, and some tol theta, traverse the tree till it's far enough that you can approximate the
-        node as a "particle" and add the gravitational acceleration of that particle to the ret array. n1 is the leaf node that 
-        holds the particle we are calculating the accel for.
-        """
-        if(self == root):
-            return
-        dr = root.center_of_mass - self.center_of_mass
-        r = np.sqrt(np.sum(dr**2))
-        size_of_node = root.boundary.h - self.boundary.h
-        if(size_of_node/r < settings.THETA or root.leaf):
-            self.body.acceleration += settings.GRAVITATION * root.mass * dr / (r**2 + settings.SOFTENING**2)**1.5
-        
-        elif self.body.position == root.body.position:
-                    (self.body.velocity, root.body.velocity) = (root.body.velocity, self.body.velocity)
-        else:
-            for _ in root.children.keys:
-                root.children[_].traverse_compute(root)
-        return self.body.acceleration
+            print("root.center_of_mass", root.center_of_mass)
+            print("self.center_of_mass", self.center_of_mass)
+            print("self.center_of_mass - root.center_of_mass", self.center_of_mass - root.center_of_mass)
+            print("(self.center_of_mass - root.center_of_mass).abs()", (self.center_of_mass - root.center_of_mass).abs())
+            print("root.total_mass * (self.center_of_mass - root.center_of_mass).abs()", root.total_mass * (self.center_of_mass - root.center_of_mass).abs())
+            print("d", d)
+            print("d**2", d**2)
+            print("settings.Softening", settings.Softening)
+            print(" (d**2 + settings.Softening**2)**1.5",  (d**2 + settings.Softening**2)**1.5)
+            acc_1 = settings.Gravitation * root.total_mass * (self.center_of_mass - root.center_of_mass).abs() / (d**2 + settings.Softening**2)**1.5
+            acc_2 = settings.N_bodies[self.body].acceleration
+            print("acc_1", acc_1)
+            print("acc_2", acc_2)
+            settings.N_bodies[self.body].acceleration.x += settings.Gravitation * root.total_mass * (self.center_of_mass - root.center_of_mass).abs() / (d**2 + settings.Softening**2)**1.5
+            settings.N_bodies[self.body].acceleration.y += settings.Gravitation * root.total_mass * (self.center_of_mass - root.center_of_mass).abs() / (d**2 + settings.Softening**2)**1.5
+"""

@@ -31,6 +31,7 @@ Release
 
 
 # Importing Global Libraries
+import numpy as np
 
 # Import custom libraries
 import NBody_problem.utils.log as log
@@ -53,7 +54,6 @@ class Body:
         """
 
         #------------------------------------------------
-        
 
         log.log("STARTED", "body.py", "__init__")
 
@@ -65,19 +65,21 @@ class Body:
 
         log.log("ENDED", "body.py", "__init__")
     
-
-    def compute(self) :
-        """The acceleration being updated, it updates velocity and position."""
+    def compute_remain_parameters(self) :
+        """Calcule, après le calcul de l'accélération, la position et la vélocité."""
 
         #------------------------------------------------
         
+        log.log("STARTED", "body.py", "compute_remain_parameters")
 
-        log.log("STARTED", "body.py", "compute")
-
+        # Positions
         self.position += self.velocity + self.acceleration * 0.5
+        settings.Positions[self.id] = self.position
+
+        # Velocities
         self.velocity += self.acceleration
 
-        log.log("ENDED", "body.py", "__init__")
+        log.log("ENDED", "body.py", "compute_remain_parameters")
 
 
     def __str__(self):

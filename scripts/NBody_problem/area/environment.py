@@ -31,16 +31,14 @@ Release
 
 
 # Importing Global Libraries
-import math
-import numpy as np
 
 # Import custom libraries
 import NBody_problem.utils.settings as settings
 import NBody_problem.utils.log as log
 
 import NBody_problem.area.node as node
-import NBody_problem.area.body as body
 import NBody_problem.geometry.vector as vector
+import NBody_problem.geometry.boundary as bound
 
 
 class Plan:
@@ -64,14 +62,16 @@ class Plan:
 
         # Geometry
         arete = settings.Arete
-        geometrical_center = vector.Vector(0, 0, 0)
-        self.root = node.Node(geometrical_center = geometrical_center, arete = arete)
+        rectangle = bound.Rectangle(0, 0, arete)
+        
+        # Construct
+        self.root = node.Node(rectangle = rectangle)
 
         # Bodies
-        self.root.insert(settings.N_bodies)
+        for body_index in range(settings.Number_bodies) :
+            self.root.insert(settings.N_bodies[body_index])
 
         log.log("ENDED", "environment.py", "construct")
-
 
     def update(self):
         """Met à jour l'envrionnement après écoulement de temps (1 timestep)."""
@@ -81,12 +81,12 @@ class Plan:
         log.log("STARTED", "environment.py", "update")
 
         # Calcul des accelérations
-        for node_index in range(settings.Number_bodies) :
-            settings.N_bodies[node_index].compute_acceleration(self.root)
+        for body_index in range(settings.Number_bodies) :
+            self.compute_acceleration(self.root, body_index)
         
         # Calcul des autres paramètres
-        for body in settings.N_bodies :
-            body.compute()
+        for body_index in range(settings.Number_bodies) :
+            settings.N_bodies[body_index].compute_remain_parameters()
         
         # Reconstruction de l'arbre
         self.construct()
@@ -94,8 +94,29 @@ class Plan:
         log.log("ENDED", "environment.py", "update")
 
 
+    def compute_acceleration(self, root, body_index):
+        """Calcule l'accélération du noeud d'indice "body_index".
+        
+        Parameters
+        ----------
+        root : Node
+            La racine de l'arbre à partir de laquelle la fonction commence l'exploration (peut être la rcine de l'arbre ou un noeud).
+        
+        body_index : int
+            L'indice du corps que la fonction lui calcule l'accelération.
+        """
+        
+        #------------------------------------------------ 
+        
+        log.log("STARTED", "environment.py", "compute_acceleration")
 
+        # Trouver le noeud correspondant
+        node = settings.N_Body_Nodes[body_index]
 
+        # Appel de méthode récurisve
+        node.traverse_compute(root)
+
+        log.log("ENDED", "environment.py", "compute_acceleration")
 
 
 
@@ -106,6 +127,25 @@ class Plan:
 
 
 """
+    def insert_bodies(self, root):
+        Insère les corps à partir de la liste de settings.
+        
+        Parameters
+        ----------
+        root : Node
+            La racine de l'arbre que va construire la fonction.
+        
+        
+        #------------------------------------------------ 
+        
+        log.log("STARTED", "environment.py", "insert_bodies")
+
+        # Noeud intermédiaire
+        node_inter = 
+
+
+        log.log("ENDED", "environment.py", "insert_bodies")
+
 class Space:
     def __init__(self, NBodies):
         # Theta

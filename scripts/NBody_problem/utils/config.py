@@ -132,7 +132,7 @@ def integrate_configuration():
 
 	# Environlent Parameters
 	section = dict(config['env_param'])
-	
+	"""
 	# dimension
 	try :
 		# Verify if it is correctly input
@@ -140,7 +140,7 @@ def integrate_configuration():
 	except :
 		print('Erreur dans la conversion de dimension')
 		return
-
+"""
 	# arete
 	try :
 		# Verify if it is correctly input
@@ -204,7 +204,8 @@ def integrate_configuration():
 	
 	# Bodies
 	settings.N_bodies = []
-	index = 0
+	settings.Number_bodies = 0
+	index = settings.Number_bodies
 	while True :
 		try :
 			# Verify if the section exists
@@ -213,6 +214,7 @@ def integrate_configuration():
 			return
 
 		# Create new body
+		settings.Number_bodies += 1
 		new_body = body.Body(index)
 
 		# Mass

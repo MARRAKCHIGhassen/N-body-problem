@@ -244,7 +244,7 @@ class Vector:
         return math.sqrt(self.x*self.x + self.y*self.y + self.z*self.z)
     
 
-    def distance(cls, vect_1, vect_2):
+    def distance(vect_1, vect_2):
         """calculate distance between two vectors
 
         Parameters
@@ -266,6 +266,6 @@ class Vector:
 
         log.log("STARTED", "vector.py", "distance")
 
-        return math.sqrt((vect_1.x - vect_2.x)**2, (vect_1.y - vect_2.y)**2, (vect_1.z - vect_2.z)**2)
+        return math.sqrt((vect_1.x - vect_2.x)**2 + (vect_1.y - vect_2.y)**2 + (vect_1.z - vect_2.z)**2)
 
     

@@ -26,7 +26,6 @@ GUI = 1
 Interface = 0
 
 # Environment Parameters 
-Dimension = 0
 Arete = 50
 Gravitation = 1.0
 Theta = 0.5
@@ -44,4 +43,5 @@ Timestep = 0.01
 
 # Simulation Global Variables
 N_bodies = []
+N_Body_Nodes = {}
 Positions = []
